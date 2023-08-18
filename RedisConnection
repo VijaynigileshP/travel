@@ -1,0 +1,25 @@
+const Redis = require('ioredis');
+
+exports.handler = async (event, context) => {
+    const redisHost = 'Your Endpoint';
+    const redisPort = 6379;
+    
+    const redis = new Redis({
+        host: redisHost,
+        port: redisPort,
+        retryStrategy: (times) => {
+            return Math.min(times * 50, 2000);
+        }
+    });
+
+    try {
+        await redis.ping();
+        console.log('Successfully connected to Redis');
+    } catch (error) {
+        console.error('Failed to connect to Redis:', error);
+    } finally {
+        await redis.quit();
+    }
+    
+    return 'Done';
+};
