@@ -1,0 +1,26 @@
+import * as AWS from 'aws-sdk';
+import * as Redis from 'ioredis';
+
+export const handler = async (): Promise<any> => {
+    try {
+        const elasticache = new AWS.ElastiCache();
+
+        const describeResponse = await elasticache.describeCacheClusters({}).promise();
+        const clusterEndpoint = describeResponse.CacheClusters[0].CacheNodes[0].Endpoint!.Address;
+
+        const client = new Redis({
+            host: clusterEndpoint,
+        });
+
+        await client.connect();
+        
+        console.log("Connected to ElastiCache successfully");
+
+        client.disconnect();
+
+        return "Connected to ElastiCache successfully";
+    } catch (error) {
+        console.error("Error:", error);
+        throw new Error("Failed to connect to ElastiCache");
+    }
+};
