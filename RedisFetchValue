@@ -1,0 +1,29 @@
+const Redis = require('ioredis');
+
+exports.handler = async (event, context) => {
+    const redisHost = 'ec.zunnrp.clustercfg.use1.cache.amazonaws.com';
+    const redisPort = 6379;
+    
+    const redis = new Redis({
+        host: redisHost,
+        port: redisPort,
+        retryStrategy: (times) => {
+            return Math.min(times * 50, 2000);
+        }
+    });
+
+    try {
+        // Set a key-value pair
+        await redis.set('myKey', 'Hello, Redis from Lambda!');
+
+        // Get the value for a key
+        const value = await redis.get('myKey');
+        console.log('Value from Redis:', value);
+    } catch (error) {
+        console.error('Failed to interact with Redis:', error);
+    } finally {
+        await redis.quit();
+    }
+    
+    return 'Done';
+};
